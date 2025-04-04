@@ -1,21 +1,42 @@
 from astrbot.api.event import filter, AstrMessageEvent, MessageEventResult
 from astrbot.api.star import Context, Star, register
 from astrbot.api import logger
+import psutil  # 用于获取系统状态
 
-@register("helloworld", "YourName", "一个简单的 Hello World 插件", "1.0.0")
-class MyPlugin(Star):
+@register("n-tool", "YourName", "多功能工具插件", "1.0.0")
+class NToolPlugin(Star):
     def __init__(self, context: Context):
         super().__init__(context)
     
-    # 注册指令的装饰器。指令名为 helloworld。注册成功后，发送 `/helloworld` 就会触发这个指令，并回复 `你好, {user_name}!`
-    @filter.command("helloworld")
-    async def helloworld(self, event: AstrMessageEvent):
-        '''这是一个 hello world 指令''' # 这是 handler 的描述，将会被解析方便用户了解插件内容。建议填写。
-        user_name = event.get_sender_name()
-        message_str = event.message_str # 用户发的纯文本消息字符串
-        message_chain = event.get_messages() # 用户所发的消息的消息链 # from astrbot.api.message_components import *
-        logger.info(message_chain)
-        yield event.plain_result(f"Hello, {user_name}, 你发了 {message_str}!") # 发送一条纯文本消息
+    @filter.command("menu")
+    async def show_menu(self, event: AstrMessageEvent):
+        '''显示功能菜单'''
+        menu_content = """
+        === N-Tool 菜单 ===
+        1. 系统状态 (/status)
+        2. 帮助信息 (/help)
+        3. 插件信息 (/about)
+        
+        请选择功能或直接输入命令
+        """
+        yield event.plain_result(menu_content)
+
+    @filter.command("status")
+    async def show_status(self, event: AstrMessageEvent):
+        '''显示系统状态信息'''
+        # 获取系统信息
+        cpu_percent = psutil.cpu_percent(interval=1)
+        mem = psutil.virtual_memory()
+        disk = psutil.disk_usage('/')
+        
+        status_message = f"""
+        === 系统状态 ===
+        CPU 使用率: {cpu_percent}%
+        内存使用: {mem.percent}% (已用: {mem.used/1024/1024:.2f}MB / 总计: {mem.total/1024/1024:.2f}MB)
+        磁盘使用: {disk.percent}% (已用: {disk.used/1024/1024/1024:.2f}GB / 总计: {disk.total/1024/1024/1024:.2f}GB)
+        """
+        yield event.plain_result(status_message)
 
     async def terminate(self):
-        '''可选择实现 terminate 函数，当插件被卸载/停用时会调用。'''
+        '''插件卸载时的清理工作'''
+        logger.info("N-Tool 插件正在卸载...")
