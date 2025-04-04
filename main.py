@@ -4,12 +4,33 @@ from astrbot.api import logger
 import psutil
 import platform
 from datetime import datetime
+import subprocess
+import re
 
-@register("n-tool", "Liangxiu", "Multi-functional Utility Plugin", "1.3.1")
+@register("n-tool", "Liangxiu", "Multi-functional Utility Plugin", "1.3.2")
 class NToolPlugin(Star):
     def __init__(self, context: Context):
         super().__init__(context)
+        self._cpu_info = self._get_cpu_info()  # 初始化时获取CPU信息
     
+    def _get_cpu_info(self) -> str:
+        """Cross-platform CPU info fetcher"""
+        try:
+            if platform.system() == "Windows":
+                return platform.processor()
+            elif platform.system() == "Darwin":
+                return subprocess.check_output(['sysctl', '-n', 'machdep.cpu.brand_string']).decode().strip()
+            elif platform.system() == "Linux":
+                with open('/proc/cpuinfo') as f:
+                    for line in f:
+                        if 'model name' in line:
+                            return re.sub('.*model name.*:', '', line, 1).strip()
+                return "Unknown CPU"
+            return platform.processor()[:32]  # Fallback with truncation
+        except Exception as e:
+            logger.warning(f"CPU info fetch failed: {str(e)}")
+            return "Unknown CPU"
+
     @filter.command("menu")
     async def show_menu(self, event: AstrMessageEvent) -> MessageEventResult:
         """Show command menu"""
@@ -64,7 +85,8 @@ OS: {platform.system()} {platform.release()}
 Arch: {platform.machine().upper()}
 Kernel: {platform.version().split()[0]}
 Py: {platform.python_version()}
-CPU: {platform.processor().split('@')[0].strip()}
+CPU: {self._cpu_info}
+Cores: {psutil.cpu_count(logical=False)}P/{psutil.cpu_count()}T
 ----------------
 """.strip())
 
