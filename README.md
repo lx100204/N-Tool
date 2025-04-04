@@ -1,9 +1,8 @@
-# helloworld
+# N-Tool 插件描述
 
-AstrBot 插件模板
+N-Tool 是一个多功能工具插件，提供系统状态查看和便捷菜单功能。
 
-A template plugin for AstrBot plugin feature
+## 功能命令
 
-# 支持
-
-[帮助文档](https://astrbot.app)
+1. `/menu` - 显示一个交互式菜单界面，提供插件的各种功能入口
+2. `/status` - 显示当前系统状态信息，包括CPU、内存使用情况等
