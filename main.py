@@ -100,7 +100,7 @@ N-Tool v1.2
         """
         yield event.plain_result(about_message.strip())
 
-    @filter.command("ping")
+    @filter.command("ping <host>")
     async def ping_host(self, event: AstrMessageEvent, host: str):
         '''检测网络连通性'''
         try:
