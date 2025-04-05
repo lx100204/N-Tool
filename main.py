@@ -5,6 +5,7 @@ import psutil
 import platform
 from datetime import datetime
 import subprocess  # 导入 subprocess 模块以执行系统命令
+import asyncio  # 导入 asyncio 模块
 
 @register("n-tool", "Liangxiu", "多功能工具插件", "1.2.0")
 class NToolPlugin(Star):
@@ -106,8 +107,14 @@ N-Tool v1.2
             # 根据操作系统构建 ping 命令
             param = '-n' if platform.system().lower() == 'windows' else '-c'
             command = ['ping', param, '3', host]  # Windows 下 ping 3 次，其他系统 ping 3 次
-            # 使用 self.context 来运行异步进程
-            process = await self.context.run_async_process(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+            # 使用 asyncio 创建异步子进程
+            process = await asyncio.create_subprocess_exec(
+                *command,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE
+            )
+
             stdout, stderr = await process.communicate()
 
             if process.returncode == 0:
