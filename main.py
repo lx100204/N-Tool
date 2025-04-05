@@ -13,7 +13,7 @@ class NToolPlugin(Star):
         logger.info("N-Tool 插件已加载")  # 添加插件加载时的日志信息
 
     @filter.command("menu")
-    async def show_menu(self, event: AstrMessageEvent):
+    async def show_menu(self, context: Context, event: AstrMessageEvent):
         '''功能菜单'''
         menu_content = """
 NTool 功能菜单
@@ -28,7 +28,7 @@ NTool 功能菜单
         yield event.plain_result(menu_content.strip())
 
     @filter.command("status")
-    async def show_status(self, event: AstrMessageEvent):
+    async def show_status(self, context: Context, event: AstrMessageEvent):
         '''系统状态'''
         cpu_percent = psutil.cpu_percent(interval=1)  # 获取 CPU 使用率
         mem = psutil.virtual_memory()  # 获取内存信息
@@ -43,7 +43,7 @@ CPU: {cpu_percent}% | 内存: {mem.percent}% ({mem.used/1024/1024:.1f}MB/{mem.to
         yield event.plain_result(status_message.strip())
 
     @filter.command("time")
-    async def show_time(self, event: AstrMessageEvent):
+    async def show_time(self, context: Context, event: AstrMessageEvent):
         '''当前时间'''
         now = datetime.now()  # 获取当前时间
         time_message = f"""
@@ -54,7 +54,7 @@ CPU: {cpu_percent}% | 内存: {mem.percent}% ({mem.used/1024/1024:.1f}MB/{mem.to
         yield event.plain_result(time_message.strip())
 
     @filter.command("sysinfo")
-    async def system_info(self, event: AstrMessageEvent):
+    async def system_info(self, context: Context, event: AstrMessageEvent):
         '''系统信息'''
         sys_info = f"""
 系统信息
@@ -64,7 +64,7 @@ CPU: {cpu_percent}% | 内存: {mem.percent}% ({mem.used/1024/1024:.1f}MB/{mem.to
         yield event.plain_result(sys_info.strip())
 
     @filter.command("netstat")
-    async def network_status(self, event: AstrMessageEvent):
+    async def network_status(self, context: Context, event: AstrMessageEvent):
         '''网络状态'''
         net_io = psutil.net_io_counters()  # 获取网络 I/O 计数器
         net_message = f"""
@@ -75,7 +75,7 @@ CPU: {cpu_percent}% | 内存: {mem.percent}% ({mem.used/1024/1024:.1f}MB/{mem.to
         yield event.plain_result(net_message.strip())
 
     @filter.command("help")
-    async def show_help(self, event: AstrMessageEvent):
+    async def show_help(self, context: Context, event: AstrMessageEvent):
         '''帮助'''
         help_message = """
 命令列表
@@ -90,7 +90,7 @@ CPU: {cpu_percent}% | 内存: {mem.percent}% ({mem.used/1024/1024:.1f}MB/{mem.to
         yield event.plain_result(help_message.strip())
 
     @filter.command("about")
-    async def about_plugin(self, event: AstrMessageEvent):
+    async def about_plugin(self, context: Context, event: AstrMessageEvent):
         '''插件信息'''
         about_message = f"""
 N-Tool v1.2
@@ -100,13 +100,13 @@ N-Tool v1.2
         yield event.plain_result(about_message.strip())
 
     @filter.command("ping")
-    async def ping_host(self, event: AstrMessageEvent, host: str):
+    async def ping_host(self, context: Context, event: AstrMessageEvent, host: str):
         '''检测网络连通性'''
         try:
             # 根据操作系统构建 ping 命令
             param = '-n' if platform.system().lower() == 'windows' else '-c'
             command = ['ping', param, '3', host]  # Windows 下 ping 3 次，其他系统 ping 3 次
-            process = await self.context.run_async_process(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            process = await context.run_async_process(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             stdout, stderr = await process.communicate()
 
             if process.returncode == 0:
